@@ -1,0 +1,145 @@
+﻿@using System.Globalization;
+@using X.PagedList;
+@model IPagedList<AdminMessage>
+@{
+    ViewData["Title"] = "رسائل الإدارة";
+    var msg = ViewBag.Message as AdminMessage;
+    var connected = ViewBag.ConnectedUsers as IEnumerable<(int Id, string Name, string Role)>;
+
+    var searchText = Context.Request.Query["text"];
+    var searchDate = Context.Request.Query["date"];
+}
+<div class="row">
+    <div class="col-lg-2 mb-3">
+        <div class="d-grid gap-2 mb-3">
+            <a class="btn btn-primary" asp-action="Message" asp-controller="Admin">إرسال رسالة</a>
+            <a class="btn btn-primary" asp-action="Chat" asp-controller="Admin">محادثة</a>
+        </div>
+        <form>
+            <div class="mb-3">
+                <label class="form-label" for="text">البحث الرسالة</label>
+                <input type="text" class="form-control" id="text" name="text" placeholder="أدخل عبارة للبحث أو اسم" value="@searchText" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="date">البحث بالتاريخ</label>
+                <input type="date" class="form-control" id="date" name="date" value="@searchDate" />
+            </div>
+            <br />
+            <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-outline-secondary">ابحث <span class="bi bi-search"></span></button>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        الرسائل
+                        <div class="float-end">
+                            <a asp-action="Index" asp-controller="Admin" asp-route-msg="@msg?.Id" asp-route-page="@(Model.HasPreviousPage?Model.PageNumber-1:1)" asp-route-text="@searchText" asp-route-date="@searchDate" class="btn btn-sm btn-dark" title="السابق"><span class="bi bi-chevron-right"></span></a>
+                            <span>@Model.PageNumber / @Model.PageCount</span>
+                            <a asp-action="Index" asp-controller="Admin" asp-route-msg="@msg?.Id" asp-route-page="@(Model.HasNextPage?Model.PageNumber+1:Model.PageNumber)" asp-route-text="@searchText" asp-route-date="@searchDate" class="btn btn-sm btn-dark" title="التالي"><span class="bi bi-chevron-left"></span></a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            @foreach (var message in Model)
+                            {
+                                var isDone = message.Deliveries.Count > 0 && message.Deliveries.All(d => d.DeliverTime != null);
+                                <a asp-action="Index" asp-controller="Admin" asp-route-msg="@message.Id" asp-route-page="@Model.PageNumber" asp-route-text="@searchText" asp-route-date="@searchDate" class="list-group-item list-group-item-action">
+                                    <div class="row">
+                                        <div dir="rtl" class="col">
+                                            <span dir="rtl" class="fw-bold">@message.Sender.FullName</span>
+                                            : @message.Text
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        @if (isDone)
+                                        {
+                                            <div class="col" title="تم التوصيل">
+                                                <span class="bi bi-check text-success"></span>
+                                            </div>
+                                        }
+                                        <div class="col">
+                                            <span class="float-end" dir="rtl">
+                                                <span> @message.SendTime.ToString("g",CultureInfo.GetCultureInfo("ar-SY"))</span>
+                                                <span class="bi bi-clock"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                @if (msg != null)
+                {
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            بيانات التوصيل
+                        </div>
+                        <div class="card-body">
+                            <div class="w-100" style="min-height:500px;" id="map"></div>
+                        </div>
+
+                        <div class="card-footer p-0">
+                            <div class="accordion " id="accordionFlushExample">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="flush-headingOne">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                            حالات الاستلام
+                                        </button>
+                                    </h2>
+                                    <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                                        <div class="accordion-body">
+                                            <div class="list-group">
+                                                @foreach (var item in msg.Deliveries)
+                                                {
+                                                    <div class="list-group-item">
+                                                        <span>@item.Mobile.Owner</span>
+                                                        @if (item.DeliverTime.HasValue)
+                                                        {
+                                                            <span class="badge bg-success float-end">@item.DeliverTime?.ToString("g",CultureInfo.GetCultureInfo("ar-SY"))</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning float-end">قيد الانتظار</span>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+
+    @if (msg != null && msg.Location.HasValue())
+    {
+        <script src="~/js/maps.js"></script>
+        <script type="text/javascript">
+            var marker = addAdminMessageMarker(@msg.Location.Latitude, @msg.Location.Longitude, '@msg.Text');
+            map.panTo([@msg.Location.Latitude, @msg.Location.Longitude]);
+            map.setZoom(15);
+            marker.openPopup();
+        </script>
+    }
+    else @* if (!msg?.Location.HasValue() ?? false) *@
+    {
+        <script type="text/javascript">
+            $('#map').text('لا يوجد بيانات موقع').css('min-height', 25).addClass('text-info');
+        </script>
+    }
+    }

@@ -1,0 +1,48 @@
+﻿@model Emergency.Dtos.DeviceModel
+
+<div class="modal fade" id="CreateDeviceModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("Create", "Device"))
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="createModalLabel">إنشاء جهاز جديد</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="row row-cols-1">
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(model => model.AndroidId, htmlAttributes: new { @class = "control-label" })
+                            @Html.EditorFor(model => model.AndroidId, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.AndroidId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(model => model.Owner, htmlAttributes: new { @class = "control-label" })
+                            @Html.EditorFor(model => model.Owner, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Owner, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(model => model.SecureCode, htmlAttributes: new { @class = "control-label" })
+                            @Html.EditorFor(model => model.SecureCode, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.SecureCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(model => model.Notes, htmlAttributes: new { @class = "control-label" })
+                            @Html.EditorFor(model => model.Notes, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Notes, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

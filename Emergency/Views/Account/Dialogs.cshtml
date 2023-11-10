@@ -1,0 +1,121 @@
+﻿
+<div class="modal fade" id="fullNameModal" tabindex="-1" aria-labelledby="fullNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("UpdateUserName", "Account"))
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="fullNameModalLabel">تغيير الاسم</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="id" value="" />
+                    <label class="control-label " for="FullName">الاسم الكامل</label>
+                    <div class="col-md-10  mb-2">
+                        <input class="form-control text-box single-line" id="FullName" name="FullName" type="text" value="" />
+                        <span class="field-validation-valid text-danger" data-valmsg-for="FullName" data-valmsg-replace="true"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="passModal" tabindex="-1" aria-labelledby="passModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("UpdatePassword", "Account"))
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="passModalLabel">تغيير كلمة المرور</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="id" value="" />
+                    <div class="form-group  mb-2">
+                        <label class="control-label" for="Password">كلمة المرور</label>
+                        <div class="col-md-10">
+                            <input class="form-control text-box single-line" data-val="true" data-val-required="الحقل مطلوب" id="Password" name="Password" type="password" value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="control-label" for="Confirm">تأكيد كلمة المرور</label>
+                        <div class="col-md-10">
+                            <input class="form-control text-box single-line" data-val="true" data-val-equalto="كلمة المرور وتأكيدها غير متطابقتين" data-val-equalto-other="*.Password" data-val-required="الحقل مطلوب" id="Confirm" name="Confirm" type="password" value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="Confirm" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("Create", "Account"))
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="createModalLabel">إنشاء مستخدم جديد</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    @Html.AntiForgeryToken()
+                    <div class="form-group mb-2">
+                        <label class="control-label" for="Name">اسم المستخدم</label>
+                        <div class="col-md-10">
+                            <input class="form-control text-box single-line" data-val="true" data-val-maxlength="The field اسم المستخدم must be a string or array type with a maximum length of &#39;50&#39;." data-val-maxlength-max="50" data-val-remote="الاسم موجود مسبقا" data-val-remote-additionalfields="*.Name" data-val-remote-type="POST" data-val-remote-url="/Account/CheckUserName" data-val-required="الحقل مطلوب" id="Name" name="Name" type="text" value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="Name" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label class="control-label" for="FullName">الاسم الفعلي</label>
+                        <div class="col-md-10">
+                            <input class="form-control text-box single-line" data-val="true" data-val-required="الحقل مطلوب" id="FullName" name="FullName" type="text" value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="FullName" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group  mb-2">
+                        <label class="control-label" for="Password">كلمة المرور</label>
+                        <div class="col-md-10">
+                            <input class="form-control text-box single-line" data-val="true" data-val-required="الحقل مطلوب" id="Password" name="Password" type="password" value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="control-label" for="Confirm">تأكيد كلمة المرور</label>
+                        <div class="col-md-10">
+                            <input class="form-control text-box single-line" data-val="true" data-val-equalto="كلمة المرور وتأكيدها غير متطابقتين" data-val-equalto-other="*.Password" data-val-required="الحقل مطلوب" id="Confirm" name="Confirm" type="password" value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="Confirm" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+

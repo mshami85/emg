@@ -1,0 +1,119 @@
+﻿@model IPagedList<Emergency.Models.User>
+@{
+    ViewData["Title"] = "المستخدمون";
+}
+
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+
+<div class="row">
+    <div class="col-lg-2">
+        <form>
+            <div class="mb-3">
+                <label for="searchName" class="form-label">البحث السريع</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchName" aria-describedby="searchNameHelp" placeholder="أدخل أي عبارة للبحث">
+                    <button class="btn btn-outline-secondary bi bi-search"></button>
+                </div>
+                <div id="searchNameHelp" class="form-text">اكتب الاسم للبحث السريع</div>
+            </div>
+        </form>
+
+        <br />
+        <div class="d-grid gap-2">
+            <button id="btShowCreate" class="btn btn-primary" onclick="ShowCreateModal()">إنشاء جديد</button>
+        </div>
+    </div>
+    <div class="col">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>الاسم الفعلي</th>
+                        <th>الحالة</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="namesTable">
+                    @foreach (var usr in Model)
+                    {
+                        <tr>
+                            <td>@usr.UserName</td>
+                            <td>
+                                @usr.FullName
+                                <span class="btn bi bi-pencil text-warning" onclick="ShowUpdateUserName(@usr.Id)">
+                                </span>
+                            </td>
+                            <td>
+                                @if (!usr.UserName.ToLower().Contains("admin"))
+                                {
+                                    <a href="@Url.Action("SwitchState", "Account", new {@id=usr.Id})" title="@(usr.Enabled ? "انقر للتعطيل" : "انقر للتفعيل")">
+                                        <span class="badge @(usr.Enabled ? "text-bg-success" : "text-bg-warning")">@(usr.Enabled ? "مفعل" : "غير فعال")</span>
+                                    </a>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="ShowUpdatePassword(@usr.Id)">
+                                    <span class="bi bi-key-fill"></span>
+                                    تغيير كلمة المرور
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="float-end" dir="ltr">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }) , new PagedListRenderOptions{ Display = PagedListDisplayMode.IfNeeded})
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="createModalPlace"></div>
+<div id="UpdateUserNameModalPlace"></div>
+<div id="UpdatePasswordModalPlace"></div>
+
+@section scripts{
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#searchName").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#namesTable tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+            $.ajax({
+                url: '@Url.Action("Create","Account")',
+                type: 'GET',
+                success: function (data) {
+                    $('#createModalPlace').html(data);
+                    $.validator.unobtrusive.parse('#createModalPlace');
+                }
+            });
+        });
+
+        function ShowCreateModal() {
+            $('#CreateModal').modal('show');
+        }
+
+        function ShowUpdateUserName(id) {
+            showModalDialog('@Url.Action("UpdateUserName","Account")/' + id, '#UpdateUserNameModalPlace', '#UpdateUserNameModal');
+            // $.ajax({
+            //     url: '@Url.Action("UpdateUserName","Account")/' + id,
+            //     type: 'GET',
+            //     success: function (data) {
+            //         $('#UpdateUserNameModalPlace').html(data);
+            //         $.validator.unobtrusive.parse('#UpdateUserNameModalPlace');
+            //         $('#UpdateUserNameModal').modal('show');
+            //     }
+            // });
+        }
+
+        function ShowUpdatePassword(id) {
+            showModalDialog('@Url.Action("UpdatePassword","Account")/' + id, '#UpdatePasswordModalPlace', '#UpdatePasswordModal');
+        }
+    </script>
+}

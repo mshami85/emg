@@ -1,0 +1,28 @@
+﻿@model AdminMessage
+
+@if (Model == null) return;
+
+<div class="row mb-2">
+    <div class="col-lg-6">
+        <a asp-action="Index" asp-controller="Admin" asp-route-msg="" class="btn-close" aria-label="Close"></a>
+    </div>
+    <div class="col-lg">
+        <div class="list-group">
+            @foreach (var item in Model.Deliveries)
+            {
+                <div class="list-group-item">
+                    <span>@item.Mobile.Owner</span>
+                    @if (item.DeliverTime.HasValue)
+                    {
+                        <span class="badge bg-success float-end">@item.DeliverTime?.ToString("G")</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning float-end">قيد الانتظار</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

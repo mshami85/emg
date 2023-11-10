@@ -1,0 +1,33 @@
+﻿@{
+    if (!ViewData.ContainsKey("XStatus"))
+    {
+        return;
+    }
+    if (!Enum.TryParse<JobStatus>(ViewData["XStatus"]?.ToString(), out JobStatus status))
+    {
+        return;
+    }
+}
+
+@if (status == JobStatus.SUCCESS)
+{
+    if (ViewData["XMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="bi bi-info-circle-fill text-success" viewBox="0 0 16 16"></span>
+            <strong> ملاحظة: </strong> @ViewData["XMessage"].
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+}
+else if (status == JobStatus.FAIL)
+{
+    if (ViewData["XMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span class="bi bi-exclamation-triangle-fill text-danger" viewBox="0 0 16 16"></span>
+            <strong> تحذير: </strong> @ViewData["XMessage"].
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+}

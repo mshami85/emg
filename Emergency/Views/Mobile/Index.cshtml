@@ -1,0 +1,200 @@
+﻿@using System.Globalization;
+@using Microsoft.Extensions.Primitives;
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@using X.PagedList;
+@model Emergency.Dtos.MessageIndexViewModel
+
+@{
+    ViewData["Title"] = "رسائل العملاء";
+    var allMessages = Model.AllMessages;
+    var statuesMessages = Model.LatestStatues;
+
+    var searchText = Context.Request.Query["text"];
+    var searchStatus = Context.Request.Query["status"];
+    var searchDate = Context.Request.Query["date"];
+
+    var previousPage = allMessages.HasPreviousPage ? allMessages.PageNumber - 1 : 1;
+    var nextPage = allMessages.HasNextPage ? allMessages.PageNumber + 1 : allMessages.PageNumber;
+    var newMsgs = Context.Request.Query["unread"];
+
+    Func<MobileStatus, string> ColorClass = (ms) => ms == MobileStatus.IAM_OK ? "bg-success" : ms == MobileStatus.NEED_HELP ? "bg-warning" : "bg-danger";
+}
+<div class="row">
+    <div class="col-lg-2 ">
+        <form>
+            <div class="mb-3">
+                <label class="form-label" for="text">البحث بالاسم أو الرسالة</label>
+                <input type="text" class="form-control" id="text" name="text" placeholder="أدخل عبارة للبحث أو اسم" value="@searchText" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="date">البحث بالتاريخ</label>
+                <input type="date" class="form-control" id="date" name="date" value="@searchDate" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">البحث بالحالة</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="status" id="SearchStatus1" value="" @(string.IsNullOrEmpty(searchStatus) ? "checked" : "")>
+                    <label class="form-check-label" for="SearchStatus1">
+                        الكل
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="status" id="SearchStatus2" value="@MobileStatus.IAM_OK" @(searchStatus == @MobileStatus.IAM_OK.ToString() ? "checked" : "")>
+                    <label class="form-check-label" for="SearchStatus2">
+                        @MobileStatus.IAM_OK.ToDescription()
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="status" id="SearchStatus3" value="@MobileStatus.NEED_HELP" @(searchStatus == @MobileStatus.NEED_HELP.ToString() ? "checked" : "")>
+                    <label class="form-check-label" for="SearchStatus3">
+                        @MobileStatus.NEED_HELP.ToDescription()
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="status" id="SearchStatus4" value="@MobileStatus.EMERGENCY" @(searchStatus == @MobileStatus.EMERGENCY.ToString() ? "checked" : "")>
+                    <label class="form-check-label" for="SearchStatus4">
+                        @MobileStatus.EMERGENCY.ToDescription()
+                    </label>
+                </div>
+            </div>
+            <br />
+            <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-outline-secondary">ابحث <span class="bi bi-search"></span></button>
+            </div>
+        </form>
+        <div class="d-grid gap-2 mb-3">
+            <a asp-action="Index" class="btn btn-primary">عرض الكل</a>
+        </div>
+    </div>
+    <div class="col">
+        <div class="row row-cols-lg-2">
+            <div class="col-lg">
+                <div class="card mb-3">
+                    <div class="card-header">
+
+                        @if (!StringValues.IsNullOrEmpty(newMsgs))
+                        {
+                            <span class="text-danger">الرسائل غير المقروءة</span>
+                            <a asp-action="Index" class="btn btn-sm btn-secondary">عرض الكل</a>
+                        }
+                        else if (!StringValues.IsNullOrEmpty(searchDate) || !StringValues.IsNullOrEmpty(searchText) || !string.IsNullOrEmpty(searchStatus))
+                        {
+                            <span class="text-warning">الرسائل المفلترة</span>
+                            <a asp-action="Index" class="btn btn-sm btn-secondary">عرض الكل</a>
+                        }
+                        else
+                        {
+                            <span>جميع الرسائل</span>
+                        }
+
+                        <div class="float-end">
+                            <a asp-action="Index" asp-controller="Mobile" asp-route-page="@previousPage" asp-route-text="@searchText" asp-route-status="@searchStatus" asp-route-date="@searchDate" class="btn btn-sm btn-dark"><span class="bi bi-chevron-right"></span></a>
+                            <span>@allMessages.PageNumber / @allMessages.PageCount</span>
+                            <a asp-action="Index" asp-controller="Mobile" asp-route-page="@nextPage" asp-route-text="@searchText" asp-route-status="@searchStatus" asp-route-date="@searchDate" class="btn btn-sm btn-dark"><span class="bi bi-chevron-left"></span></a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <div class="list-group">
+
+                            @foreach (var msg in allMessages)
+                            {
+                                var strLen = msg.Text?.Length > 25 ? 25 : msg.Text?.Length ?? 0;
+
+                                <a class="list-group-item list-group-item-action" asp-action="Message" asp-controller="Mobile" asp-route-id="@msg.Id">
+                                    @* <span class="fw-bold">@msg.Mobile.Owner</span> : @msg.Text?.Substring(0,strLen) ...
+                                <span class="badge @ColorClass(msg.Status)"> @msg.Status.ToDescription()</span>
+                                <span class="float-end">
+                                <span class="bi bi-clock"></span>
+                                @msg.SendTime.ToString(CultureInfo.GetCultureInfo("ar-SY"))
+                                </span>
+                                @if (!msg.Shown)
+                                {
+                                <span class="bi bi-envelope-exclamation text-info" title="غير مقروء"></span>
+                                } *@
+
+                                    <div class="row">
+                                        <div class="col-lg">
+                                            <span class="fw-bold">@msg.Mobile.Owner</span> : @msg.Text?.Substring(0,strLen) ...
+                                        </div>
+                                        <div class="col-auto align-self-end">
+                                            <span class="bi bi-clock"></span> @msg.SendTime.ToString("g",CultureInfo.GetCultureInfo("ar-SY"))
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <span class="badge @ColorClass(msg.Status)"> @msg.Status.ToDescription()</span>
+                                        </div>
+                                        <div class="col">
+                                            @if (!msg.Shown)
+                                            {
+                                                <span class="bi bi-envelope-exclamation text-info float-end" title="غير مقروء"></span>
+                                            }
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        آخر الحالات والرسائل @(statuesMessages != null && statuesMessages.Any() ? statuesMessages.Count().ToString() : "")
+                    </div>
+                    @if (statuesMessages != null && statuesMessages.Count() > 0)
+                    {
+                        <div class="card-body">
+                            <div id="map" style="width:100%;height:500px;"></div>
+                        </div>
+
+                        <div class="card-footer p-0">
+                            <div class="accordion " id="accordionFlushExample">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="flush-headingOne">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                            عرض قائمةرسائل الحالات
+                                        </button>
+                                    </h2>
+                                    <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                                        <div class="accordion-body">
+                                            <ul class="list-group">
+                                                @foreach (var stmsg in statuesMessages)
+                                                {
+                                                    <li class="list-group-item">
+                                                        @stmsg.Mobile.Owner :
+                                                        <span class="badge @ColorClass(stmsg.Status)">@stmsg.Status.ToDescription()</span>
+                                                        <a asp-action="Message" asp-controller="Mobile" asp-route-id="@stmsg.Id" class="btn btn-sm btn-info float-end">عرض الرسالة</a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            لا توجد حالات
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/js/maps.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            loadLatestStatues();
+        });
+    </script>
+}

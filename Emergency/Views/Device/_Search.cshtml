@@ -1,0 +1,34 @@
+﻿@model IEnumerable<Emergency.Models.Mobile>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>اسم المالك</th>
+            <th>تاريخ التسجيل</th>
+            <th>رقم الجهاز</th>
+            <th>ملاحظات</th>
+            <th>تعديل</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Owner</td>
+                <td>@(item.RegisterDate?.ToString("dd / MM / yyyy"))</td>
+                <td>@item.AndroidId</td>
+                <td>@item.Notes</td>
+                <td>
+                    <a href="@Url.Action("SwitchState", "Device", new { @id = item.Id})" title="@(item.Enabled ? "انقر للتعطيل" : "انقر للتفعيل")">
+                        <span class="badge @(item.Enabled ? "text-bg-success" : "text-bg-warning")">@(item.Enabled ? "مفعل" : "غير فعال")</span>
+                    </a>
+                </td>
+                <td>
+                    <button onclick="ShowModifyModal(@item.Id)" class="btn btn-sm btn-warning">
+                      <span class="bi bi-pencil"></span>  تعديل
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

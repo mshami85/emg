@@ -1,0 +1,155 @@
+﻿@using Emergency.Dtos;
+@using System.Globalization;
+@{
+    ViewData["Title"] = "الرئيسية";
+
+    var action = Context.Request.RouteValues["action"] ?? string.Empty;
+    var controller = Context.Request.RouteValues["controller"] ?? string.Empty;
+
+    var adminMessageStatisticsChart = (ChartJSCore.Models.Chart)ViewBag.AdminMessageStatisticsChart;
+    var statusStatisticsChart = (ChartJSCore.Models.Chart)ViewBag.StatusStatisticsChart;
+    var statusByMonthStatisticsChart = (ChartJSCore.Models.Chart)ViewBag.StatusByMonthStatisticsChart;
+}
+
+<div class="row">
+    <div class="col-lg-2 d-none d-xl-block">
+        <div class="card shadow">
+            <div class="card-header bg-transparent align-self-lg-center">
+                الأوامر السريعة
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="@Url.Action("Index","Home")" class="list-group-item list-group-item-action">
+                        <span class="bi bi-house-check-fill me-2"></span>
+                        الرئيسية
+                    </a>
+                    <a href="@Url.Action("Index","Admin",new{page="",msg="",text="",date=""})" class="list-group-item list-group-item-action">
+                        <span class="bi bi-microsoft-teams me-2"></span>
+                        رسائل الإدارة
+                    </a>
+                    <a href="@Url.Action("Message","Admin")" class="list-group-item list-group-item-action">
+                        <span class="bi bi-envelope-at-fill me-2"></span>
+                        إرسال رسالة إدارية
+                    </a>
+                    <a href="@Url.Action("Index","Mobile",new{page="",status="",text="",date=""})" class="list-group-item list-group-item-action">
+                        <span class="bi bi-send-fill me-2"></span>
+                        رسائل الحالات
+                    </a>
+                    <a href="@Url.Action("Chat","Admin")" class="list-group-item list-group-item-action">
+                        <span class="bi bi-wechat me-2"></span>
+                        المحادثة السريعة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+
+        <div class="row ">
+            <div class="col-lg-6 ">
+                <div class="card shadow mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-7 border-end">
+                                <div class="mb-1 card-header fw-bold fs-3 text-decoration-underline">إحصائيات رسائل الإدارة</div>
+                                <div class="mb-1">
+                                    <span class="fw-bold">العدد الكلي</span> : <span>@ViewBag.AdminMessageStatistics.TotalCount</span>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold">تم التوصيل</span> : <span>@ViewBag.AdminMessageStatistics.DeliveredCount</span>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <canvas id="x1" class="w-100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow mb-3">
+                    <div class="card-body">
+                        <div class="mb-1 card-header fw-bold fs-3 text-decoration-underline">
+                            المتصلون
+                            <span class="float-end"><button class="btn btn-sm btn-dark" onclick="getConnectedUsers()"><span class="bi bi-arrow-clockwise"></span></button> </span>
+                        </div>
+                        <ul id="connected-users"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card shadow mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-7 border-end">
+                                <div class="mb-1 card-header fw-bold fs-3 text-decoration-underline">إحصائيات رسائل الحالات</div>
+                                <div class="mb-1">
+                                    <span class="fw-bold">العدد الكلي</span> : <span>@ViewBag.StatusStatistics.TotalCount</span>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold badge bg-success">@MobileStatus.IAM_OK.ToDescription() </span> : <span>@ViewBag.StatusStatistics.OkCount</span>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold badge bg-warning">@MobileStatus.NEED_HELP.ToDescription() </span> : <span>@ViewBag.StatusStatistics.HelpCount</span>
+                                </div>
+                                <div class="mb-1">
+                                    <span class="fw-bold badge bg-danger">@MobileStatus.EMERGENCY.ToDescription() </span> : <span>@ViewBag.StatusStatistics.EmergencyCount</span>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <canvas id="x2" class="w-100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow mb-3">
+                    <div class="card-body">
+                        <canvas id="x3" class="w-100 h-100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/lib/chartjs/chart.umd.js"></script>
+    <script type="text/javascript">
+        @Html.Raw(adminMessageStatisticsChart?.CreateChartCode("x1"));
+        @Html.Raw(statusStatisticsChart?.CreateChartCode("x2"));
+        @Html.Raw(statusByMonthStatisticsChart?.CreateChartCode("x3"));
+
+        function getConnectedUsers() {
+            $.ajax({
+                url: '@Url.Action("GetConnectedUsers","Admin")',
+                type: 'GET',
+                success: function (json) {
+                    var data = json;
+                    if (data && data.length > 0) {
+                        $('#connected-users').children().remove();
+                        for (var i = 0; i < json.length; i++) {
+                            var t = data[i].role == 'mobile' ? 'موبايل' : 'مشرف';
+                            $('#connected-users').append('<li>' + data[i].name + ' - <span class="badge bg-info">' + t + '</span></li>');
+                        }
+                    }
+                }, error: function (err) {
+                    $('#connected-users').children().remove();
+                    $('#connected-users').append('<li class="text-danger">' + err.statusText + '</li>');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            setTimeout(() => getConnectedUsers(), 1000);
+        });
+
+    </script>
+}
+

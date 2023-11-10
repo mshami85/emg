@@ -1,0 +1,110 @@
+﻿@model Emergency.Dtos.AdminMessageModel
+
+@{
+    ViewData["Title"] = "إرسال رسالة إدارية";
+}
+<div class="row">
+    <div class="col-lg-2">
+        <div class="d-grid gap-2 mb-3">
+            <a class="btn btn-primary" asp-action="Index" asp-controller="Admin">الرسائل المرسلة</a>
+            <a class="btn btn-primary mb-3" asp-action="Chat" asp-controller="Admin">محادثة</a>
+
+            <button class="btn btn-info mb-2" onclick="findLocation()">تحديد موقعي</button>
+        </div>
+    </div>
+    <div class="col-lg">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        تحديد الموقع المطلوب
+                        <button class="btn btn-sm btn-dark float-end" onclick="addMapMarker()" title="إضافة موقع">تحديد موقع في الخريطة</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="w-100 h-100 mb-3" style="min-height:600px;" id="map"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        نص الرسالة
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Message" asp-controller="Admin" asp-antiforgery="true" class="mb-3" id="frm1">
+                            <input type="hidden" asp-for="Latitude" />
+                            <input type="hidden" asp-for="Longitude" />
+                            <textarea asp-for="Text" maxlength="100" class="form-control" rows="10" placeholder="أدخل نص الرسالة المرسلة مع الموقع إن أردت"></textarea>
+                            <span class="text-danger" asp-validation-for="Text"></span>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" form="frm1" class="btn btn-primary float-end">إرسال الرسالة</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/js/maps.js"></script>
+    <script type="text/javascript">
+        map.locate({ setView: true, animate: true });
+
+        var addMarkerMode = false;
+        var markerText = '';
+        var currentMarker;
+
+        function mapClick(evt) {
+            if (addMarkerMode) {
+                if (currentMarker != null) {
+                    map.removeLayer(currentMarker);
+                }
+                currentMarker = L.marker(evt.latlng, { icon: redIcon }).addTo(map).bindPopup(markerText + "<br/>" + evt.latlng);
+                addMarkerMode = false;
+                markerText = '';
+
+                $('#Latitude').val(evt.latlng.lat);
+                $('#Longitude').val(evt.latlng.lng);
+            }
+        }
+        map.on('click', mapClick);
+
+        function mapMouseMove(evt) {
+            if (addMarkerMode) {
+                document.getElementById('map').style.cursor = 'crosshair';
+            }
+            else {
+                document.getElementById('map').style.cursor = '';
+            }
+        }
+        map.on('mousemove', mapMouseMove);
+
+        var found = false;
+        function locationFound(e) {
+            if (!found) {
+                var radius = e.accuracy;
+                L.marker(e.latlng).addTo(map).bindPopup("You are within " + radius + " meters from this point").openPopup();
+                L.circle(e.latlng, radius).addTo(map);
+                found = true;
+            }
+            map.setZoom(12);
+        }
+
+        function findLocation() {
+            if (!found) {
+                map.on('locationfound', locationFound);
+            }
+            map.locate({ setView: true });
+        }
+
+        function addMapMarker() {
+            addMarkerMode = true;
+            markerText = $('#Text').val();
+            markerText = markerText == '' || markerText == null ? "<b>Selected point</b>" : "<b>" + markerText + "</b>";
+        }
+
+    </script>
+}

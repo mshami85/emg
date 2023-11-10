@@ -1,0 +1,121 @@
+﻿@model IEnumerable<ChatMessage>;
+@{
+    ViewData["Title"] = "المحادثات الفورية";
+    var userName = (string)ViewBag.UserName ?? "";
+}
+
+<div class="row">
+    <div class="col-lg-2">
+        <div class="d-grid gap-2 mb-3">
+            <a class="btn btn-primary" asp-action="Index" asp-controller="Admin">الرسائل المرسلة</a>
+            <a class="btn btn-primary" asp-action="Message" asp-controller="Admin">إرسال رسالة</a>
+        </div>
+    </div>
+    <div class="col-lg">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        المحادثة
+                    </div>
+                    <div class="card-body p-1" style="height: 60vh; overflow-y:scroll" id="chatspace">
+                        <ul class="list-unstyled" id="messagelist">
+                            @foreach (var item in Model)
+                            {
+                                if (item.Sender == userName)
+                                {
+                                    @await Html.PartialAsync("_Sender", item)
+                                }
+                                else
+                                {
+                                    @await Html.PartialAsync("_Receiver", item)
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <div class="mt-2 p-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="send-text" rows="4" placeholder="أدخل نصاً ثم إضغط إرسال" />
+                            <button class="btn btn-primary" id="send-btn">إرسال <span class="bi bi-sign-turn-left-fill" style="transform-origin: center center;"></span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        المتصلون
+                        <a class="float-end btn btn-sm btn-dark" title="تحديث قائمة المتصلين" id="refresh-users" onclick="getConnectedUsers()"><span class="bi bi-arrow-clockwise"></span></a>
+                    </div>
+                    <div class="card-body">
+                        <ul id="connected-users">
+                            @*  @foreach (var con in ViewBag.ConnectedUsers as IEnumerable<(int Id, string Name, string Role)>)
+                            {
+                            <li>
+                            @con.Name - <span class="badge bg-info"> @(con.Role == UserRoles.MOBILE ? "جهاز موبايل" : "مشرف")</span>
+                            </li>
+                            } *@
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            scrollDown('#chatspace');
+            $('#send-btn').on('click', trySend);
+            $('#send-text').on('keypress', function (k) {
+                if (k.keyCode == 13) {
+                    trySend();
+                }
+            });
+            $('#send-text').focus();
+            setTimeout(function () {
+                getConnectedUsers();
+            }, 1000);
+
+            setInterval(function () {
+                getConnectedUsers();
+            }, 10000)
+        });
+
+        function trySend() {
+            var text = $('#send-text').val();
+            if (!text || text.length <= 0) {
+                return;
+            }
+            $('#send-text').val('');
+            sendChatMessage(text);
+            $('#send-text').focus();
+        }
+
+        function getConnectedUsers() {
+            $('#refresh-users').addClass('disabled');
+            $.ajax({
+                url: '@Url.Action("GetConnectedUsers","Admin")',
+                type: 'GET',
+                success: function (json) {
+                    var data = json;
+                    if (data && data.length > 0) {
+                        $('#connected-users').children().remove();
+                        for (var i = 0; i < json.length; i++) {
+                            var t = data[i].role == 'mobile' ? 'موبايل' : 'مشرف';
+                            $('#connected-users').append('<li>' + data[i].name + ' - <span class="badge bg-info">' + t + '</span></li>');
+                        }
+                    }
+                }, error: function (err) {
+                    $('#connected-users').append('<li class="text-danger">' + err.statusText + '</li>');
+                    
+                }, complete: function () {
+                    $('#refresh-users').removeClass('disabled');
+                }
+            });
+        }
+    </script>
+}

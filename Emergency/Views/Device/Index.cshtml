@@ -1,0 +1,98 @@
+﻿@model IPagedList<Emergency.Models.Mobile>
+@using X.PagedList;
+@using X.PagedList.Mvc;
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+
+@{
+    ViewData["Title"] = "إدارة الأجهزة والعملاء";
+}
+
+<div class="row">
+    <div class="col-lg-2">
+        <div class="mb-3 ">
+            <label class="form-label">البحث السريع في الأجهزة</label>
+            <div class="input-group mb-2">
+                <input class="form-control" type="text" name="qsearch" id="qsearch" placeholder="أدحل عبارة بحث" />
+                <button class="btn btn-outline-secondary" type="button" onclick="doSearch($('#qsearch').val());"><span class="bi bi-search"></span></button>
+            </div>
+
+            <div id="searchNameHelp" class="form-text">اكتب أي عبارة للبحث السريع</div>
+        </div>
+
+        <br />
+        <div class="d-grid gap-2">
+            <button id="btShowCreate" class="btn btn-primary" onclick="ShowCreateModal()">إنشاء جديد</button>
+        </div>
+    </div>
+    <div class="col">
+        <div class="table-responsive">
+            <div id="devices">
+                @await Html.PartialAsync("_Search", Model)
+                <p class="float-end">
+                    @Html.PagedListPager((IPagedList)Model, page => Url.Action("Index", new { page = page }), new PagedListRenderOptions { Display = PagedListDisplayMode.IfNeeded })
+                </p>
+            </div>
+            <div id="results">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="CreateModalPlace"></div>
+<div id="ModifyModalPlace"></div>
+
+@section scripts{
+    <script type="text/javascript">
+        function doSearch(value) {
+            $('#results').empty();
+            if (value == '' || value == "" || value.length <= 0) {
+                $('#devices').show();
+                $('#results').html('');
+                $('#results').hide();
+            } else {
+                $('#devices').hide();
+                $('#results').show();
+                $.ajax({
+                    url: "@Url.Action("Search","Device")",
+                    type: "POST",
+                    success: function (data) {
+                        $('#results').html(data);
+                    },
+                    data: {
+                        text: value,
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+        }
+        function ShowCreateModal() {
+            showModalDialog('@Url.Action("Create","Device")', '#CreateModalPlace', '#CreateDeviceModal');
+            // $.ajax({
+            //     url: '@Url.Action("Create","Device")',
+            //     type: 'GET',
+            //     success: function (data) {
+            //         $('#CreateModalPlace').html(data);
+            //         $.validator.unobtrusive.parse('#CreateModalPlace');
+            //         $('#CreateDeviceModal').modal('show');
+            //     }
+            // });
+        }
+
+        function ShowModifyModal(id) {
+            showModalDialog('@Url.Action("Modify","Device")/' + id, '#ModifyModalPlace', '#ModifyDeviceModal');
+            // $.ajax({
+            //     url: '@Url.Action("Modify","Device")/' + id,
+            //     type: 'GET',
+            //     success: function (data) {
+            //         $('#ModifyModalPlace').html(data);
+            //         $.validator.unobtrusive.parse('#ModifyModalPlace');
+            //         $('#ModifyDeviceModal').modal('show');
+            //     }
+            // });
+        }
+
+    </script>
+}

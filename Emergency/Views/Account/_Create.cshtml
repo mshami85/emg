@@ -1,0 +1,52 @@
+﻿@model Emergency.Dtos.RegisterVM
+
+<div class="modal fade" id="CreateModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Create" asp-controller="Account" asp-antiforgery="true">
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="createModalLabel">إنشاء مستخدم جديد</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-2">
+                        <label class="control-label" asp-for="Name">اسم المستخدم</label>
+                        <div class="col-md-10">
+                            <input class="form-control" asp-for="Name" />
+                            <span class="text-danger" asp-validation-for="Name"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label class="control-label" asp-for="FullName">الاسم الفعلي</label>
+                        <div class="col-md-10">
+                            <input class="form-control" asp-for="FullName" />
+                            <span class="text-danger" asp-validation-for="FullName"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group  mb-2">
+                        <label class="control-label" asp-for="Password">كلمة المرور</label>
+                        <div class="col-md-10">
+                            <input class="form-control" asp-for="Password" />
+                            <span class="text-danger" asp-validation-for="Password"></span>
+                        </div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="control-label" asp-for="Confirm">تأكيد كلمة المرور</label>
+                        <div class="col-md-10">
+                            <input class="form-control" asp-for="Confirm" />
+                            <span class="text-danger" asp-validation-for="Confirm"></span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
