@@ -5,8 +5,6 @@
         public ConnectionStrings ConnectionStrings { get; set; }
         public JWTSection JWT { get; set; }
         public Version MinVersion { get; set; }
-        public bool NotifyForChat { get; set; }
-        public bool NotifyForMessage { get; set; }
     }
 
     public class ConnectionStrings

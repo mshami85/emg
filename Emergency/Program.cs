@@ -8,9 +8,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
 
 namespace Emergency
@@ -41,42 +44,63 @@ namespace Emergency
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddSingleton<HtmlEncoder>(HtmlEncoder.Create(allowedRanges: new[] { UnicodeRanges.BasicLatin, UnicodeRanges.Arabic }));
             builder.Services.AddSingleton<IConnectedUserService, ConnectedUserService>();
-            builder.Services.AddCors(options => options.AddPolicy("_allowAll", policy => policy.SetIsOriginAllowed(orig => true)));
-            builder.Services.AddAuthentication()
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            builder.Services.AddCors(options => options.AddPolicy("_allowAll", policy => policy.AllowAnyHeader()
+                                                                                               .AllowAnyMethod()
+                                                                                               .AllowCredentials()
+                                                                                               .SetIsOriginAllowed(orig => true)));
+            #region Auth section
+            string myScheme = "JWT_IDENTITY_OR_COOKIE";
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = myScheme;
+                options.DefaultChallengeScheme = myScheme;
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.LoginPath = "/Account/Login/";
+                options.ExpireTimeSpan = TimeSpan.FromDays(1);
+            }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.LoginPath = "/Account/Login/";
-                    options.ExpireTimeSpan = TimeSpan.FromDays(1);
-                })
-                .AddJwtBearer(options =>
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateActor = false,
+                    ValidateLifetime = true,
+                    //ValidAudience = builder.Configuration["JWT:Audience"],
+                    //ValidIssuer = builder.Configuration["JWT:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+                };
+                options.Events = new JwtBearerEvents
                 {
-                    options.SaveToken = true;
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    OnMessageReceived = context =>
                     {
-                        ValidateAudience = false,
-                        ValidateIssuer = false,
-                        ValidateActor = false,
-                        ValidateLifetime = true,
-                        //ValidAudience = builder.Configuration["JWT:Audience"],
-                        //ValidIssuer = builder.Configuration["JWT:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
-                    };
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
+                        var access_token = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(access_token) && path.HasValue && path.StartsWithSegments("/MessageHub", StringComparison.OrdinalIgnoreCase))
                         {
-                            var access_token = context.Request.Query["access_token"];
-                            var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(access_token) && path.HasValue && path.StartsWithSegments("/MessageHub", StringComparison.OrdinalIgnoreCase))
-                            {
-                                context.Token = access_token;
-                                context.HttpContext.Request.Headers.Authorization = $"{JwtBearerDefaults.AuthenticationScheme} {access_token}";
-                            }
-                            return Task.CompletedTask;
+                            context.Token = access_token;
+                            context.HttpContext.Request.Headers.Authorization = $"{JwtBearerDefaults.AuthenticationScheme} {access_token}";
                         }
-                    };
-                });
+                        return Task.CompletedTask;
+                    }
+                };
+            }).AddPolicyScheme(myScheme, myScheme, options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    string authorization = context.Request.Headers.Authorization;
+                    Debug.WriteLine("Auth=" + authorization);
+
+                    if (!StringValues.IsNullOrEmpty(authorization) && authorization.StartsWith(JwtBearerDefaults.AuthenticationScheme, StringComparison.OrdinalIgnoreCase))
+                        return JwtBearerDefaults.AuthenticationScheme;
+                    else if (!StringValues.IsNullOrEmpty(authorization) && authorization.Contains(IdentityConstants.ApplicationScheme, StringComparison.OrdinalIgnoreCase))
+                        return IdentityConstants.ApplicationScheme;
+                    return CookieAuthenticationDefaults.AuthenticationScheme;
+                };
+            });
+
             builder.Services.AddAuthorization(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder(IdentityConstants.ApplicationScheme,
@@ -85,9 +109,13 @@ namespace Emergency
                                             .RequireAuthenticatedUser()
                                             .Build();
             });
-            builder.Services.AddControllersWithViews();
+            #endregion
+            builder.Services.AddControllersWithViews().AddJsonOptions(config =>
+            {
+                config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
             builder.Services.AddRazorPages();
-            builder.Services.AddSignalR().AddJsonProtocol();
+            builder.Services.AddSignalR();
             builder.Services.AddWebOptimizer(pipe =>
             {
                 pipe.AddCssBundle("/css/bootstrap.css", "/lib/bootstrap/dist/css/bootstrap.rtl.css", "/lib/bootstrap/dist/css/bootstrap-icons.css", "/css/PagedList.css");
