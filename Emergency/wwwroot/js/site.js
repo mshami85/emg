@@ -13,7 +13,7 @@
 function scrollDown(id) {
     var elem = $(id);
     elem.animate({
-        scrollTop: elem.prop("scrollHeight")
+        scrollTop: elem.prop("scrollHeight") + 50
     }, 500);
 }
 
@@ -46,7 +46,22 @@ var connection = new signalR.HubConnectionBuilder()
 connection.on("NotifyWeb", function () {
     Notification.requestPermission().then((result) => {
         if (result === "granted") {
-            const notification = new Notification("رسالة حالة جديدة");
+            if (result === "granted") {
+                if (window.location.href.endsWith('Chat')) {
+                    window.focus();
+                } else {
+                    const notification = new Notification("محادثة ", {
+                        body: 'رسالة حالة جديدة من مستخدمي الجوالات',
+                        dir: "rtl",
+                        lang: "ar",
+                        icon: "/Images/chat-icon.png",
+                        badge: "/Images/chat-icon.png",
+                    });
+                    notification.onclick = function (ev) {
+                        window.open('/Mobile/Index', 'Mobile');
+                    };
+                }
+            }
         }
     });
     var counter = 1 + parseInt($('#event-counter').text());
@@ -54,14 +69,26 @@ connection.on("NotifyWeb", function () {
 });
 
 connection.on("NotifyChat", function (chatMsg) {
-    Notification.requestPermission().then((result) => {
-        if (result === "granted") {
-            const notification = new Notification("محادثة ", {
-                body: chatMsg.sender + ': ' + chatMsg.message,
-                dir: "rtl",
-            });
-        }
-    });
+    if (Notification) {
+        Notification.requestPermission().then((result) => {
+            if (result === "granted") {
+                if (window.location.href.endsWith('Chat')) {
+                    window.focus();
+                } else {
+                    const notification = new Notification("محادثة ", {
+                        body: chatMsg.sender + ': ' + chatMsg.message,
+                        dir: "rtl",
+                        lang: "ar",
+                        icon: "/Images/chat-icon.png",
+                        badge: "/Images/chat-icon.png",
+                    });
+                    notification.onclick = function (ev) {
+                        window.open('/Admin/Chat', 'Chat');
+                    };
+                }
+            }
+        });
+    }
     if ($('#send-text')) {
         var lst = $('#messagelist');
         $.ajax({
@@ -69,11 +96,12 @@ connection.on("NotifyChat", function (chatMsg) {
             type: 'GET',
             success: function (data) {
                 lst.append(data);
-            }
+                scrollDown('#chatspace');
+            },
         });
-        scrollDown('#chatspace');
     }
 });
+
 
 async function startSignalR() {
     try {

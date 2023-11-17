@@ -30,7 +30,7 @@ namespace Emergency
             builder.Services.Configure<AppSettings>(builder.Configuration);
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
-            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+            //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddIdentity<User, IdentityRole<int>>().AddEntityFrameworkStores<DBContext>().AddDefaultTokenProviders();
             builder.Services.Configure<IdentityOptions>(options =>
             {
@@ -91,8 +91,6 @@ namespace Emergency
                 options.ForwardDefaultSelector = context =>
                 {
                     string authorization = context.Request.Headers.Authorization;
-                    Debug.WriteLine("Auth=" + authorization);
-
                     if (!StringValues.IsNullOrEmpty(authorization) && authorization.StartsWith(JwtBearerDefaults.AuthenticationScheme, StringComparison.OrdinalIgnoreCase))
                         return JwtBearerDefaults.AuthenticationScheme;
                     else if (!StringValues.IsNullOrEmpty(authorization) && authorization.Contains(IdentityConstants.ApplicationScheme, StringComparison.OrdinalIgnoreCase))
@@ -115,7 +113,7 @@ namespace Emergency
                 config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
             builder.Services.AddRazorPages();
-            builder.Services.AddSignalR();
+            builder.Services.AddSignalR().AddJsonProtocol();
             builder.Services.AddWebOptimizer(pipe =>
             {
                 pipe.AddCssBundle("/css/bootstrap.css", "/lib/bootstrap/dist/css/bootstrap.rtl.css", "/lib/bootstrap/dist/css/bootstrap-icons.css", "/css/PagedList.css");

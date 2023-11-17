@@ -236,7 +236,7 @@ namespace Emergency.Controllers.Api
                 await _context.MobileMessages.AddAsync(msg);
                 await _context.SaveChangesAsync();
 
-                await _hubContext.Clients.Group(UserRoles.WEB_USER).SendAsync("NotifyWeb");
+                await _hubContext.Clients.Group(UserRoles.WEB_USER).SendAsync(NotifyActions.NotifyWeb);
 
                 return Ok();
             }

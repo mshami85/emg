@@ -7,6 +7,13 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Emergency.Hubs
 {
+    public class NotifyActions
+    {
+        public const string NotifyWeb = "NotifyWeb";
+        public const string NotifyChat = "NotifyChat";
+        public const string NotifyMobile = "NotifyMobile";
+    }
+
     [Authorize]
     public class MessageHub : Hub
     {
@@ -65,7 +72,7 @@ namespace Emergency.Hubs
                 await _context.ChatMessages.AddAsync(msg);
                 await _context.SaveChangesAsync();
 
-                await Clients.All.SendAsync("NotifyChat", msg);
+                await Clients.All.SendAsync(NotifyActions.NotifyChat, msg);
             }
             catch (Exception ex)
             {

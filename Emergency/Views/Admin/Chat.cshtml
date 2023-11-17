@@ -68,13 +68,15 @@
 @section Scripts{
     <script type="text/javascript">
         $(document).ready(function () {
-            scrollDown('#chatspace');
             $('#send-btn').on('click', trySend);
             $('#send-text').on('keypress', function (k) {
                 if (k.keyCode == 13) {
                     trySend();
                 }
             });
+
+            window.name = 'Chat';
+            scrollDown('#chatspace');
             $('#send-text').focus();
             setTimeout(function () {
                 getConnectedUsers();
@@ -111,7 +113,7 @@
                     }
                 }, error: function (err) {
                     $('#connected-users').append('<li class="text-danger">' + err.statusText + '</li>');
-                    
+
                 }, complete: function () {
                     $('#refresh-users').removeClass('disabled');
                 }

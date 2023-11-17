@@ -19,36 +19,24 @@
 
         public void Add(string connectionId, int id, string name, string role)
         {
-            lock (this)
-            {
-                _users.Add(connectionId, (id, name, role));
-            }
+            _users.Add(connectionId, (id, name, role));
         }
 
         public void Remove(string connectionId)
         {
-            lock (this)
-            {
-                _users.Remove(connectionId);
-            }
+            _users.Remove(connectionId);
         }
 
         public IEnumerable<(int Id, string Name, string Role)> GetConnected()
         {
-            lock (this)
-            {
-                return _users.Select(u => u.Value).ToList();
-            }
+            return _users.Select(u => u.Value).Distinct().ToList();
         }
 
         public (int Id, string Name, string Role) Get(string connectionId)
         {
-            lock (this)
-            {
-                if (_users.ContainsKey(connectionId))
-                    return _users[connectionId];
-                return default;
-            }
+            if (_users.ContainsKey(connectionId))
+                return _users[connectionId];
+            return default;
         }
     }
 }

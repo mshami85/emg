@@ -112,13 +112,13 @@ namespace Emergency.Controllers
                                 ChartColor.FromRgba(255, 205, 86, 0.2),
                                 ChartColor.FromRgba(255, 99, 132, 0.2),
                             },
-                            //BorderColor = new List<ChartColor>
-                            //{
-                            //    ChartColor.FromRgb(54, 162, 235),
-                            //    ChartColor.FromRgb(255, 205, 86),
-                            //    ChartColor.FromRgb(255, 99, 132)
-                            //},
-                            //BorderWidth = new List<int>{1,1,1},
+                            BorderColor = new List<ChartColor>
+                            {
+                                ChartColor.FromRgb(54, 162, 235),
+                                ChartColor.FromRgb(255, 205, 86),
+                                ChartColor.FromRgb(255, 99, 132)
+                            },
+                            BorderWidth = new List<int>{1,1,1},
                         }
                     }
                 }
@@ -144,7 +144,7 @@ namespace Emergency.Controllers
                                 ChartColor.FromHexString("#198754"),
                                 ChartColor.FromHexString("#ffc107"),
                                 ChartColor.FromHexString("#dc3545")
-                            }
+                            },
                         }
                     }
                 }
@@ -179,6 +179,10 @@ namespace Emergency.Controllers
                             {
                                 ChartColor.FromHexString("#198754"),
                             },
+                            //BackgroundColor = new List<ChartColor>
+                            //{
+                            //    ChartColor.FromHexString("#198754"),
+                            //},
                             Tension = 0.2,
                         },
                         new LineDataset
@@ -190,6 +194,10 @@ namespace Emergency.Controllers
                             {
                                 ChartColor.FromHexString("#ffc107"),
                             },
+                            //BackgroundColor = new List<ChartColor>
+                            //{
+                            //    ChartColor.FromHexString("#ffc107"),
+                            //},
                             Tension = 0.2,
                         },
                         new LineDataset
@@ -201,6 +209,10 @@ namespace Emergency.Controllers
                             {
                                 ChartColor.FromHexString("#dc3545"),
                             },
+                            //BackgroundColor = new List<ChartColor>
+                            //{
+                            //    ChartColor.FromHexString("#dc3545"),
+                            //},
                             Tension = 0.2,
                         }
                     }

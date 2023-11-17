@@ -107,7 +107,7 @@ namespace Emergency.Controllers
                 await _context.AdminMessages.AddAsync(admin_message);
                 await _context.SaveChangesAsync();
 
-                await _hubContext.Clients.Group(UserRoles.MOBILE).SendAsync("NotifyMobile", false);
+                await _hubContext.Clients.Group(UserRoles.MOBILE).SendAsync(NotifyActions.NotifyMobile, false);
                 this.SetState(JobStatus.SUCCESS, "يتم الآن إعلام العملاء, تمت جدولة الرسالة بنجاح");
                 return RedirectToAction("Message");
             }
