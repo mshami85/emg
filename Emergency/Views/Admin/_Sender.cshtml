@@ -1,4 +1,5 @@
-﻿@model ChatMessage
+﻿@using System.Globalization;
+@model ChatMessage
 @{
     if (Model == null) return;
     var today = DateTime.Today == Model.SendTime.Date;
@@ -14,11 +15,11 @@
 
     if (today)
     {
-        ago = Model.SendTime.ToString("t");
+        ago = Model.SendTime.ToString("T", CultureInfo.GetCultureInfo("ar-SY"));
     }
     else
     {
-        ago = Model.SendTime.ToString("G");
+        ago = Model.SendTime.ToString("g", CultureInfo.GetCultureInfo("ar-SY"));
     }
 }
 <li class="d-flex justify-content-between mb-2 p-0">

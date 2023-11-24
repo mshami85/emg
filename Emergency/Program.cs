@@ -139,7 +139,7 @@ namespace Emergency
             }
             else
             {
-                app.UseHsts();
+                //app.UseHsts();
             }
             app.UseHttpsRedirection();
             app.UseWebOptimizer();
